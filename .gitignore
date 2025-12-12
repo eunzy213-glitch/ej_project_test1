@@ -1,1 +1,40 @@
+# -----------------------------------------
+# 1. 자동 생성된 결과 폴더 (매 실행마다 변경됨)
+# -----------------------------------------
+# model_outputs/
+# model_outputs2/
+# *.csv # CSV 파일도 저장소에 포함하지 않으려면 추가 (dataset.csv는 제외 필요)
+
+# dataset.csv 파일은 원본 데이터 파일이므로, 만약 포함하고 싶다면 위의 *.csv를 제거하거나
+# 아래와 같이 예외 처리합니다.
+# !dataset.csv 
+
+
+# -----------------------------------------
+# 2. 파이썬 및 가상 환경 파일
+# -----------------------------------------
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyd
+*.so
+
+# Virtual environment
+venv/
 .venv/
+.env
+
+# Jupyter Notebook Checkpoints (선택 사항)
+.ipynb_checkpoints/
+
+
+# -----------------------------------------
+# 3. 운영체제 및 IDE 임시 파일
+# -----------------------------------------
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE (VS Code, PyCharm 등)
+.vscode/
+.idea/

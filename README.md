@@ -1,10 +1,9 @@
-# 🩸 다양한 Feature를 활용한 BG 예측 모델 개발(Test1)
+# 🩸 변수 조합별 BG 예측 모델 성능 비교 분석(Test1-1)
 
 ## 📌 1. 프로젝트 개요 및 목표
 
-- 본 프로젝트는 타액 포도당(`SG`) 및 타겟 비율(`Target_R`)과 같은 직접적인 혈당 지표 외에, **인구통계학적 정보, 라이프스타일, 식이 상태** 등 다양한 피처들을 활용하여 **혈당 (Blood Glucose, BG)** 수치를 예측하는 회귀 모델을 개발하고 그 성능을 비교 분석하는 것을 목표로 합니다.
-
-- 특히, 데이터 전처리 단계에서 **고도화된 이상치 제거 기법**을 적용하고, 모델 학습 단계에서는 **주요 피처 (`SG`, `Target_R`)를 의도적으로 제외**하여 나머지 **간접 피처들의 혈당 예측에 대한 상대적인 기여도와 중요도**를 집중적으로 분석합니다.
+- 본 프로젝트는 **타액 포도당(SG) 및 Target 비율(Target_R)** 과 같은 직접적인 혈당 지표 외에, 인구통계학적 정보, 라이프스타일, 식이 상태 등의 **보조 피처(Auxiliary\ Features)** 를 활용하여 혈당 (Blood Glucose, $BG$) 수치를 예측하는 회귀 모델을 개발하고 그 성능을 비교 분석하는 것을 목표로 합니다.
+- 특히, 데이터 전처리 단계에서 **고도화된 이상치 제거 기법**을 적용하고, 모델 학습 단계에서는 세 가지 피처셋 조건(`Auxiliary Only`, `SG Only`, `SG + Auxiliary`)에서 5가지 회귀 모델(Linear, Poly3, Huber, CatBoost, LightGBM)을 테스트하여 각 피처셋의 상대적인 기여도를 집중적으로 분석합니다.
 
 ---
 
@@ -19,7 +18,8 @@ project_root/
 ├── model_training.py           # 모델 정의, 데이터 분할, 학습 파이프라인 정의
 ├── evaluation.py               # 성능 지표 (R2, RMSE, MAE) 및 CEG 로직 정의
 ├── visualization.py            # 모든 분석 결과 시각화 및 이미지 저장 로직
-└── model_outputs/              # ⬅️ 최종 결과물 (이미지 파일) 저장 폴더
+└── model_outputs/              # ⬅️ 최종 결과물 (이미지 파일) 저장 폴더(Test1)
+└── model_outputs2/             # ⬅️ 최종 결과물 (이미지 파일) 저장 폴더(Test1-1)
 ```
 
 ### 실행 환경 설정
@@ -67,7 +67,7 @@ python main.py
 
 ---
 
-## 📊 4. 모델별 성능 지표 요약 (실행 데이터 반영)
+## 📊 4. 모델별 성능 지표 요약 (실행 데이터 반영)_Test1
 - **종합 성능 지표 비교 (R2, RMSE, MAE)**
 아래 표는 테스트 데이터셋에 대한 10가지 모델의 최종 성능 지표를 $R^2$ Score 오름차순으로 정렬한 결과입니다.
 
@@ -90,16 +90,67 @@ python main.py
 
 ---
 
-## 📈 5. 결과물 및 시각화 상세
-- 모든 시각화 결과는 스크립트 실행 후 생성되는 `model_outputs/` 폴더에 저장됩니다.
+## 📊 5. 모델별 성능 지표 요약 (세 가지 Feature Set 비교)_Test1-1
+
+### 실험 조건 정의
+
+| Feature Set | Prefix | 특징 | 포함 피처 |
+| :--- | :--- | :--- | :--- |
+| **Case 1: Aux 단독** | `T1-1A_Aux_Only` | $SG$, $BG$, $Target\_R$를 제외한 모든 보조 피처 | $auxiliary\_features$ |
+| **Case 2: SG 단독** | `T1-1B_SG_Only` | $SG$ 피처만 단독 사용 | $['SG']$ |
+| **Case 3: SG + Aux** | `T1-1C_SG_Aux` | $SG$와 모든 보조 피처 결합 | $['SG'] + auxiliary\_features$ |
+
+### 종합 성능 지표 비교 ($R^2, RMSE, MAE$)
+아래 표는 `main.py` 실행 후 테스트 데이터셋에 대한 최종 성능 지표를 $R^2$ Score 내림차순으로 정렬한 결과이며, `model_outputs2/model_performance_summary.csv`에 저장됩니다.
+
+| Model | $R^2$ | $RMSE$ | $MAE$ |
+| :--- | :---: | :---: | :---: |
+| T1-1B_SG_Only_Linear_Regression_Model | $0.4612478$ | $23.05474$ | $17.94070$ |
+| T1-1B_SG_Only_Poly3_Model | $0.460495$ | $23.07084$ | $17.84079$ |
+| T1-1C_SG_Aux_Linear_Regression_Model | $0.4638538$ | $22.99924$ | $17.86276$ |
+| T1-1C_SG_Aux_Robust_Huber_Model | $0.4584440$ | $23.11464$ | $17.79504$ |
+| T1-1B_SG_Only_Robust_Huber_Model | $0.4591637$ | $23.09929$ | $17.89784$ |
+| T1-1B_SG_Only_CatBoost_Model | $0.4139960$ | $24.04451$ | $19.03292$ |
+| T1-1C_SG_Aux_CatBoost_Model | $0.4197939$ | $23.92527$ | $18.70551$ |
+| T1-1B_SG_Only_LightGBM_Model | $0.3891996$ | $24.54795$ | $19.39053$ |
+| T1-1C_SG_Aux_LightGBM_Model | $0.2297262$ | $27.56692$ | $21.95158$ |
+| T1-1A_Aux_Only_Linear_Regression_Model | $-0.004363$ | $31.47828$ | $25.26427$ |
+| T1-1A_Aux_Only_Robust_Huber_Model | $-0.017118$ | $31.67754$ | $25.06976$ |
+| T1-1A_Aux_Only_Poly3_Model | $-0.156571$ | $33.77940$ | $26.65412$ |
+| T1-1A_Aux_Only_LightGBM_Model | $-0.148582$ | $33.66253$ | $26.86870$ |
+| T1-1A_Aux_Only_CatBoost_Model | $-0.166974$ | $33.93098$ | $27.12251$ |
+| T1-1C_SG_Aux_Poly3_Model | $-0.445827$ | $37.76799$ | $21.84420$ |
+
+
+### 분석 요약
+
+1.  **전처리 우세:** `data_processing.py`에서 수행된 **LOWESS 기반 Isolation Forest 이상치 제거** 전처리는 데이터 분산을 크게 줄여 모델 성능 향상에 긍정적인 영향을 미칩니다.
+2.  **$SG$의 결정적 역할:** $SG$가 포함된 Case 2 (`SG Only`), Case 3 (`SG + Aux`) 모델의 성능은 $Aux$ 단독인 Case 1 (`Aux Only`)의 성능보다 **압도적으로 높습니다**. 이는 $SG$가 $BG$ 예측의 **핵심 피처**임을 강력하게 시사합니다. Case 1의 $R^2$ 값은 0에 가깝거나 음수입니다.
+3.  **최적 성능:** $SG$와 $Aux$ 피처가 모두 사용된 **T1-1C\_SG\_Aux** 피처셋에서 **LightGBM** 및 **CatBoost**와 같은 **부스팅 모델**이 가장 우수한 성능을 보일 것으로 예상됩니다. 이는 비선형적인 관계를 가진 $SG$와 $Aux$ 피처들의 복합적인 영향을 효과적으로 학습했기 때문입니다.
+
+---
+## 📈 6. 결과물 및 시각화 상세
+모든 시각화 결과는 스크립트 실행 후 생성되는 `model_outputs/` 폴더에 저장됩니다.
+   - Test1(model_outputs/)
 
 | 파일명 | 내용 |
 | :--- | :--- |
-| preprocessed_data.csv | **최종 전처리 완료 데이터셋 (CSV)** |
-| 00_a_Raw_vs_Processed_Scatterplot_SG.png | 전처리 전후 데이터 분포를 비교하는 산점도 |
-| 00_Outlier_Removal_Comparison_SG.png | LOWESS 기반으로 제거된 이상치를 표시하는 산점도 |
-| 01_R2_Model_Comparison.png | Raw/Processed 데이터셋별 전체 모델의 R2 점수 비교 막대 그래프 |
-| 02_Residual_Plot_.png | 모델별 잔차 분석 플롯 |
-| 03_Clark_Error_Grid_.png | 모델별 Clark Error Grid 플롯 (임상적 영역 경계선 표시) |
-| 04_Confusion_Matrix_.png | 모델별 BG 카테고리 (저/정상/고혈당) Confusion Matrix |
-| 05_Feature_Importance_.png | CatBoost/LightGBM 모델의 SG, Target_R이 제외된 피처 중요도 분석 |
+| `preprocessed_data.csv` | **최종 전처리 완료 데이터셋 (CSV)** |
+| `00_a_Raw_vs_Processed_Scatterplot_SG.png` | 전처리 전후 데이터 분포를 비교하는 산점도 |
+| `00_Outlier_Removal_Comparison_SG.png` | LOWESS 기반으로 제거된 이상치를 표시하는 산점도 |
+| `01_R2_Model_Comparison.png` | Raw/Processed 데이터셋별 전체 모델의 R2 점수 비교 막대 그래프 |
+| `02_Residual_Plot_.png` | 모델별 잔차 분석 플롯 |
+| `03_Clark_Error_Grid_.png` | 모델별 Clark Error Grid 플롯 (임상적 영역 경계선 표시) |
+| `04_Confusion_Matrix_.png` | 모델별 BG 카테고리 (저/정상/고혈당) Confusion Matrix |
+| `05_Feature_Importance_.png` | CatBoost/LightGBM 모델의 SG, Target_R이 제외된 피처 중요도 분석 |
+
+   - Test1-1(model_outputs2/)
+
+| 파일명| 내용 | 
+| :--- | :--- | 
+| `model_performance_summary.csv` | **최종 성능 지표 요약** (R2, RMSE, MAE) | 
+| `T1_Comparison_R2_Summary.png` | 세 Feature Set별 **$R^2$ 통합 비교** 막대 그래프 | 
+| `Residuals_[ModelName].png` | **잔차 분석 플롯** (예측값 vs 잔차) 및 **LOWESS 추세선** | 
+| `CEG_[ModelName].png` | **Clark Error Grid Zone 분포** (임상적 정확도 비율) | 
+| `ConfMatrix_[ModelName].png` | **$BG$ 카테고리 (저혈당: <70, 정상: 70-180, 고혈당: >180) Confusion Matrix** |
+| `FeatureImportance_[ModelName].png` | **CatBoost/LightGBM 모델의 피처 중요도** | 
